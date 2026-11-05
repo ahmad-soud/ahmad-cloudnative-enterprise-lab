@@ -1,0 +1,16 @@
+# تجاهل مجلدات مخرجات الترايفورم والـ Plugins بالكامل
+.terraform/
+*.terraform*
+
+# تجاهل ملفات الـ State المحلية الحساسة لمنع تسريب الأسرار
+*.tfstate
+*.tfstate.*
+crash.log
+*.zip
+terraform.tfvars
+
+# تجاهل ملفات الكاش والأنظمة المحلية
+.DS_Store
+.env
+__pycache__/
+*.pyc
