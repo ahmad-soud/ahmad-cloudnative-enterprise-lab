@@ -1,3 +1,6 @@
+data "aws_secretsmanager_secret_version" "db_credentials" {
+  secret_id = "ahmad-enterprise-db-credentials-v1" # References your actual secret container name
+}
 # --- 1. DB Subnet Group for Isolated Data Subnets ---
 resource "aws_db_subnet_group" "postgres_subnets" {
   name       = "ahmad-enterprise-rds-subnet-group"
@@ -38,13 +41,13 @@ resource "aws_db_instance" "postgres" {
   engine_version         = "15"
   instance_class         = "db.t3.micro"
 
-  username               = "ahmad_user"
-  password               = "SuperSecureEnterprisePassword2026_KMS"
+  # Dynamic resolution via Secrets Manager JSON mapping 🔐
+  username               = jsondecode(data.aws_secretsmanager_secret_version.db_credentials.secret_string)["username"]
+  password               = jsondecode(data.aws_secretsmanager_secret_version.db_credentials.secret_string)["password"]
 
   db_subnet_group_name   = aws_db_subnet_group.postgres_subnets.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   skip_final_snapshot    = true
-
   storage_encrypted      = true
   kms_key_id             = var.kms_key_arn
 

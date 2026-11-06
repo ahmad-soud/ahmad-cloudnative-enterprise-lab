@@ -10,11 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # أ) سحب الكود من مستودع GitHub
       - name: Checkout Code from GitHub
         uses: actions/checkout@v4
 
-      # ب) تهيئة بيئة بايثون وفحص أخطاء الكود
       - name: Set up Python Runtime
         uses: actions/setup-python@v5
         with:
@@ -25,7 +23,6 @@ jobs:
           pip install flake8
           flake8 backend-api/main.py --count --select=E9,F63,F7,F82 --show-source --statistics
 
-      # ج) الاتصال الأمني بحساب AWS
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -33,12 +30,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-central-1
 
-      # د) تسجيل دخول محرك الدوكر إلى AWS ECR
       - name: Login to Amazon ECR Vault
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # هـ) البناء وشحن الصورة المحمية إلى ECR
       - name: Build, Tag, and Push Hardened Image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -49,7 +44,6 @@ jobs:
           docker build --provenance=false -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      # و) تنزيل وتحديث الـ ECS Task Definition
       - name: Download Active Task Definition Spec
         run: |
           aws ecs describe-task-definition --task-definition ahmad-enterprise-task --query taskDefinition > task-definition.json
@@ -62,7 +56,6 @@ jobs:
           container-name: ahmad-enterprise-api
           image: ${{ steps.login-ecr.outputs.registry }}/ahmad-enterprise-api:latest
 
-      # ز) النشر التلقائي بدون انقطاع (Zero Downtime Deployment) على ECS Fargate
       - name: Deploy Rebuilt Architecture to AWS ECS Fargate Cluster 🔥
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
