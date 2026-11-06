@@ -3,7 +3,10 @@ name: Enterprise Production CI/CD Pipeline
 on:
   push:
     branches: [ "main" ]
-
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - 'images/**'
 jobs:
   production-deployment:
     name: Code Scan, Build & Deploy to AWS Fargate
