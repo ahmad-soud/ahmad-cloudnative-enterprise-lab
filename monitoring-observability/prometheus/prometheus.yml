@@ -1,0 +1,26 @@
+# Global Prometheus configuration engine settings
+global:
+  scrape_interval: 15s     # Set the default metrics scraping rate to every 15 seconds
+  evaluation_interval: 15s # Evaluate alert rules every 15 seconds
+
+# Alertmanager configuration block
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Target endpoints for metrics collection (Scrape Configurations)
+scrape_configs:
+  # Job 1: Internal Prometheus Self-Monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Job 2: Enterprise FastAPI Application Observability Endpoint
+  - job_name: 'fastapi-enterprise-app'
+    scrape_interval: 5s       # Accelerated scraping interval for high-frequency latency tracing
+    metrics_path: '/metrics'  # Custom telemetry route injected by Prometheus Instrumentator
+    static_configs:
+      # Use host.docker.internal to allow container-to-host network metrics resolution
+      - targets: ['host.docker.internal:8000']
+

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ahmad-enterprise-api-service
+  namespace: default
+  labels:
+    app: enterprise-api
+    tier: backend
+  annotations:
+    # Integration with AWS Network Load Balancer (NLB) in EKS
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+spec:
+  type: LoadBalancer # Provisions AWS Load Balancer automatically upon apply[cite: 8]
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: enterprise-api

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(
     title="Ahmad Enterprise API - Phase 3 & 4 Validation",
@@ -7,6 +8,8 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url=None
 )
+
+Instrumentator().instrument(app).expose(app)
 
 class UserSchema(BaseModel):
     name: str

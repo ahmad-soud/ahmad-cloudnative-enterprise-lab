@@ -1,0 +1,43 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ahmad-enterprise-api-hpa
+  namespace: default
+  labels:
+    app: enterprise-api
+    tier: backend
+    environment: production
+spec:
+  # Target Deployment reference for dynamic scaling operations
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ahmad-enterprise-api-deployment
+
+  # Cluster resource boundaries for high availability and cost optimization
+  minReplicas: 3  # Minimum baseline pods running during low-traffic periods 💸
+  maxReplicas: 10 # Maximum scaling threshold to absorb high-traffic spikes 🚀
+
+  # Metric telemetry triggers driving the scaling control loop
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50 # Automatically scale out pods if CPU utilization exceeds 50% threshold 🛡️
+
+  # Stabilization window configurations to prevent rapid flapping (scaling thrashing)
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60

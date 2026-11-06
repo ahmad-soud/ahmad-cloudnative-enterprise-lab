@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ahmad-enterprise-api-deployment
+  namespace: default
+  labels:
+    app: enterprise-api
+    tier: backend
+    environment: production
+spec:
+  replicas: 3 # High Availability: 3 parallel pod replicas across nodes
+  selector:
+    matchLabels:
+      app: enterprise-api
+  template:
+    metadata:
+      labels:
+        app: enterprise-api
+        tier: backend
+    spec:
+      # 🔐 Security Hardening: Enforce Least Privilege Execution
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+
+      containers:
+        - name: ahmad-enterprise-api-container
+          # Note: Replace <AWS_ACCOUNT_ID> with your actual AWS Account ID during deployment
+          image: <AWS_ACCOUNT_ID>.dkr.ecr.eu-central-1.amazonaws.com/ahmad-enterprise-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http-port
+
+          # 🛡️ Container Security Context Limits
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+          # 💻 Compute Resource Allocation & Allocation Quotas
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+
+          # 📊 Health Check Probes for K8s Self-Healing Controller
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /docs
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
